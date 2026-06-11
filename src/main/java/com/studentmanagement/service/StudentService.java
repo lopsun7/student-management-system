@@ -8,6 +8,8 @@ public interface StudentService {
 
 	List<Student> getAllStudents();
 
+	List<Student> searchStudentsByCourse(String course);
+
 	Student createStudent(Student student);
 
 	Student getStudentById(Long id);

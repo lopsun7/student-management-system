@@ -60,10 +60,29 @@ class StudentControllerTest {
 	}
 
 	@Test
+	void shouldSearchStudentsByCourse() throws Exception {
+		studentRepository.save(new Student("Ava", "Johnson", "ava@example.com", "Java Backend"));
+		studentRepository.save(new Student("Leo", "Brown", "leo@example.com", "Python"));
+
+		mockMvc.perform(get("/api/v1/students/search").param("course", "java"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.length()").value(1))
+			.andExpect(jsonPath("$[0].firstName").value("Ava"))
+			.andExpect(jsonPath("$[0].course").value("Java Backend"));
+	}
+
+	@Test
 	void shouldReturnNotFoundForMissingStudent() throws Exception {
 		mockMvc.perform(get("/api/v1/students/{id}", 999L))
 			.andExpect(status().isNotFound())
 			.andExpect(jsonPath("$.message").value("Student not found with id: 999"))
 			.andExpect(jsonPath("$.path").value("/api/v1/students/999"));
+	}
+
+	@Test
+	void shouldExposeActuatorHealthEndpoint() throws Exception {
+		mockMvc.perform(get("/actuator/health"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.status").value("UP"));
 	}
 }

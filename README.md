@@ -16,11 +16,15 @@ A Spring Boot CRUD REST API for managing student records. This project was built
 
 - Create a student
 - Get all students
+- Search students by course with `@RequestParam`
 - Get a student by ID
 - Update a student
 - Delete a student
 - Validation for required fields and email format
-- JSON error responses for missing records and validation failures
+- JSON error responses with `@RestControllerAdvice`
+- Transaction management with `@Transactional`
+- Actuator health and info endpoints
+- Simple async logging example with `@Async`
 - Service-layer AOP logging with `@Before`, `@After`, and `@Around` advice
 
 ## Student Model
@@ -40,6 +44,7 @@ Base URL: `http://localhost:8080/api/v1/students`
 | Method | Endpoint | Description |
 | --- | --- | --- |
 | `GET` | `/api/v1/students` | Get all students |
+| `GET` | `/api/v1/students/search?course=Java` | Search students by course |
 | `POST` | `/api/v1/students` | Create a new student |
 | `GET` | `/api/v1/students/{id}` | Get a student by ID |
 | `PUT` | `/api/v1/students/{id}` | Update a student |
@@ -84,6 +89,20 @@ Default local values are already defined in [src/main/resources/application.prop
 ./mvnw test
 ```
 
+## Actuator Endpoints
+
+Base URL:
+
+```text
+http://localhost:8080/actuator
+```
+
+Examples:
+
+- `/actuator/health`
+- `/actuator/info`
+- `/actuator/metrics`
+
 ## Project Structure
 
 - [src/main/java/com/studentmanagement/controller/StudentController.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/controller/StudentController.java:1)
@@ -124,6 +143,19 @@ Self-invocation note for this demo:
 - external calls into `StudentServiceImpl` are intercepted by AOP
 - an internal call like `createStudent() -> prepareStudentForSave()` does run, but it does not go through the proxy again
 - the private helper `normalizeStudentData()` also runs, but it is not intercepted by Spring AOP
+
+## HW11 Notes
+
+This project also now demonstrates several Spring Boot topics from HW11 in a simple teaching-focused way:
+
+- `@PathVariable` on the ID-based CRUD endpoints
+- `@RequestBody` on create and update
+- `@RequestParam` on the course search endpoint
+- validation annotations in the `Student` model
+- global exception handling in `GlobalExceptionHandler`
+- `@Transactional` on the service layer
+- Actuator monitoring endpoints
+- `@Async` background logging after a student is created
 
 ## Tutorial Reference
 

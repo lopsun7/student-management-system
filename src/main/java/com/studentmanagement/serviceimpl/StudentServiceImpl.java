@@ -3,6 +3,7 @@ package com.studentmanagement.serviceimpl;
 import com.studentmanagement.exception.ResourceNotFoundException;
 import com.studentmanagement.model.Student;
 import com.studentmanagement.repository.StudentRepository;
+import com.studentmanagement.service.StudentAsyncService;
 import com.studentmanagement.service.StudentService;
 import java.util.HashMap;
 import java.util.List;
@@ -10,30 +11,44 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class StudentServiceImpl implements StudentService {
 
 	private static final Logger LOGGER = LoggerFactory.getLogger(StudentServiceImpl.class);
 
 	private final StudentRepository studentRepository;
+	private final StudentAsyncService studentAsyncService;
 
-	public StudentServiceImpl(StudentRepository studentRepository) {
+	public StudentServiceImpl(StudentRepository studentRepository, StudentAsyncService studentAsyncService) {
 		this.studentRepository = studentRepository;
+		this.studentAsyncService = studentAsyncService;
 	}
 
 	@Override
+	@Transactional(readOnly = true)
 	public List<Student> getAllStudents() {
 		return studentRepository.findAll();
 	}
 
 	@Override
-	public Student createStudent(Student student) {
-		prepareStudentForSave(student);
-		return studentRepository.save(student);
+	@Transactional(readOnly = true)
+	public List<Student> searchStudentsByCourse(String course) {
+		return studentRepository.findByCourseContainingIgnoreCase(course);
 	}
 
 	@Override
+	public Student createStudent(Student student) {
+		prepareStudentForSave(student);
+		Student savedStudent = studentRepository.save(student);
+		studentAsyncService.logStudentCreated(savedStudent.getId(), savedStudent.getEmail());
+		return savedStudent;
+	}
+
+	@Override
+	@Transactional(readOnly = true)
 	public Student getStudentById(Long id) {
 		return studentRepository.findById(id)
 			.orElseThrow(() -> new ResourceNotFoundException("Student not found with id: " + id));

@@ -1,41 +1,27 @@
 package com.studentmanagement.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
-import jakarta.persistence.Table;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 
-@Entity
-@Table(name = "students")
 public class Student {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
 	private Long id;
 
 	@NotBlank(message = "First name is required")
 	@Size(max = 50, message = "First name must be at most 50 characters")
-	@Column(name = "first_name", nullable = false, length = 50)
 	private String firstName;
 
 	@NotBlank(message = "Last name is required")
 	@Size(max = 50, message = "Last name must be at most 50 characters")
-	@Column(name = "last_name", nullable = false, length = 50)
 	private String lastName;
 
 	@NotBlank(message = "Email is required")
 	@Email(message = "Email must be valid")
-	@Column(name = "email", nullable = false, unique = true)
 	private String email;
 
 	@NotBlank(message = "Course is required")
 	@Size(max = 100, message = "Course must be at most 100 characters")
-	@Column(name = "course", nullable = false, length = 100)
 	private String course;
 
 	public Student() {

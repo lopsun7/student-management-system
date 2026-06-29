@@ -131,11 +131,11 @@ Local endpoint:
 POST /api/v1/integrations/name/aggregation
 ```
 
-Example request payload:
+Copy-ready request body:
 
 ```json
 {
-  "name": "Jessica, Amy"
+  "name": "..."
 }
 ```
 
@@ -145,19 +145,19 @@ Example local request:
 curl -X POST http://localhost:8080/api/v1/integrations/name/aggregation
 ```
 
-Or explicitly pass the same name:
+Or explicitly pass names in the request body:
 
 ```bash
 curl -X POST http://localhost:8080/api/v1/integrations/name/aggregation \
   -H "Content-Type: application/json" \
-  -d '{"name":"Jessica, Amy"}'
+  -d '{"name":"..."}'
 ```
 
-Expected response pattern:
+Copy-ready response body:
 
 ```json
 {
-  "name": "Steven, Jessica, Amy"
+  "name": "Steven, ..."
 }
 ```
 

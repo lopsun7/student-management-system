@@ -73,19 +73,19 @@ Name aggregation:
 curl -X POST http://<EC2_PUBLIC_IP>:8080/api/v1/integrations/name/aggregation
 ```
 
-Or pass the same name explicitly:
+Or pass names in the request body:
 
 ```bash
 curl -X POST http://<EC2_PUBLIC_IP>:8080/api/v1/integrations/name/aggregation \
   -H "Content-Type: application/json" \
-  -d '{"name":"Jessica, Amy"}'
+  -d '{"name":"..."}'
 ```
 
-Expected response pattern:
+Copy-ready response body:
 
 ```json
 {
-  "name": "Steven, Jessica, Amy"
+  "name": "Steven, ..."
 }
 ```
 

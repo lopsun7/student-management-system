@@ -6,7 +6,7 @@ import static org.springframework.test.web.client.match.MockRestRequestMatchers.
 import static org.springframework.test.web.client.match.MockRestRequestMatchers.requestTo;
 import static org.springframework.test.web.client.response.MockRestResponseCreators.withSuccess;
 
-import com.studentmanagement.dto.DownstreamNameResponse;
+import com.studentmanagement.dto.UpstreamNameResponse;
 import org.junit.jupiter.api.Test;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -32,9 +32,9 @@ class DownstreamAggregationServiceTest {
 				{"name":"Steven, Jessica, Amy, Celine"}
 				""", MediaType.APPLICATION_JSON));
 
-		DownstreamNameResponse response = downstreamAggregationService.aggregateNames(java.util.List.of("Jessica", "Amy"));
+		UpstreamNameResponse response = downstreamAggregationService.aggregateNames(java.util.List.of("Jessica", "Amy"));
 
-		assertThat(response.name()).isEqualTo("Steven, Jessica, Amy, Celine");
+		assertThat(response.name()).containsExactly("Steven", "Jessica", "Amy", "Celine");
 		mockRestServiceServer.verify();
 	}
 
@@ -50,9 +50,9 @@ class DownstreamAggregationServiceTest {
 				{"name":"Steven, Celine"}
 				""", MediaType.APPLICATION_JSON));
 
-		DownstreamNameResponse response = downstreamAggregationService.aggregateNames(java.util.List.of("   ", ""));
+		UpstreamNameResponse response = downstreamAggregationService.aggregateNames(java.util.List.of("   ", ""));
 
-		assertThat(response.name()).isEqualTo("Steven, Celine");
+		assertThat(response.name()).containsExactly("Steven", "Celine");
 		mockRestServiceServer.verify();
 	}
 

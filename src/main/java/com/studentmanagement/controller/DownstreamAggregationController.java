@@ -2,6 +2,7 @@ package com.studentmanagement.controller;
 
 import com.studentmanagement.dto.DownstreamNameResponse;
 import com.studentmanagement.dto.UpstreamNameRequest;
+import com.studentmanagement.dto.UpstreamNameResponse;
 import com.studentmanagement.service.DownstreamAggregationService;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
@@ -19,7 +20,7 @@ public class DownstreamAggregationController {
 	}
 
 	@PostMapping("/name/aggregation")
-	public DownstreamNameResponse aggregateName(@RequestBody(required = false) UpstreamNameRequest request) {
+	public UpstreamNameResponse aggregateName(@RequestBody(required = false) UpstreamNameRequest request) {
 		if (request == null || request.name() == null || request.name().isEmpty()) {
 			return downstreamAggregationService.aggregateDefaultName();
 		}

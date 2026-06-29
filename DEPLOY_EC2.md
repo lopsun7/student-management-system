@@ -87,7 +87,7 @@ Copy-ready response body:
 
 ```json
 {
-  "name": "Steven, ..., Celine"
+  "name": ["Steven", "...", "...", "Celine"]
 }
 ```
 

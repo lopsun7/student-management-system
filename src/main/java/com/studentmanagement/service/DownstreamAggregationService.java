@@ -2,6 +2,8 @@ package com.studentmanagement.service;
 
 import com.studentmanagement.dto.DownstreamNameRequest;
 import com.studentmanagement.dto.DownstreamNameResponse;
+import com.studentmanagement.dto.UpstreamNameResponse;
+import java.util.Arrays;
 import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
@@ -25,11 +27,11 @@ public class DownstreamAggregationService {
 		this.defaultName = defaultName;
 	}
 
-	public DownstreamNameResponse aggregateDefaultName() {
+	public UpstreamNameResponse aggregateDefaultName() {
 		return forwardToDownstream(defaultName);
 	}
 
-	public DownstreamNameResponse aggregateNames(List<String> names) {
+	public UpstreamNameResponse aggregateNames(List<String> names) {
 		String normalizedNames = normalizeNames(names);
 		if (normalizedNames.isEmpty()) {
 			return aggregateDefaultName();
@@ -49,7 +51,7 @@ public class DownstreamAggregationService {
 			.orElse("");
 	}
 
-	private DownstreamNameResponse forwardToDownstream(String aggregatedName) {
+	private UpstreamNameResponse forwardToDownstream(String aggregatedName) {
 		DownstreamNameResponse downstreamResponse = restClient.post()
 			.uri(aggregationPath)
 			.contentType(MediaType.APPLICATION_JSON)
@@ -57,9 +59,17 @@ public class DownstreamAggregationService {
 			.retrieve()
 			.body(DownstreamNameResponse.class);
 		if (downstreamResponse == null || !StringUtils.hasText(downstreamResponse.name())) {
-			return new DownstreamNameResponse(aggregatedName);
+			return toUpstreamResponse(aggregatedName);
 		}
-		return downstreamResponse;
+		return toUpstreamResponse(downstreamResponse.name());
+	}
+
+	private UpstreamNameResponse toUpstreamResponse(String names) {
+		List<String> normalizedNames = Arrays.stream(names.split(","))
+			.map(String::trim)
+			.filter(StringUtils::hasText)
+			.toList();
+		return new UpstreamNameResponse(normalizedNames);
 	}
 
 }

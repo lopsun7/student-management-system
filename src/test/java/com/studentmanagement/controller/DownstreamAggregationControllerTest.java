@@ -7,7 +7,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.studentmanagement.dto.DownstreamNameResponse;
+import com.studentmanagement.dto.UpstreamNameResponse;
 import com.studentmanagement.service.DownstreamAggregationService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,7 +31,7 @@ class DownstreamAggregationControllerTest {
 	@Test
 	void shouldAggregateProvidedNames() throws Exception {
 		when(downstreamAggregationService.aggregateNames(java.util.List.of("Jessica", "Krystal")))
-			.thenReturn(new DownstreamNameResponse("Steven, Jessica, Krystal, Celine"));
+			.thenReturn(new UpstreamNameResponse(java.util.List.of("Steven", "Jessica", "Krystal", "Celine")));
 
 		mockMvc.perform(post("/api/v1/integrations/name/aggregation")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -39,7 +39,10 @@ class DownstreamAggregationControllerTest {
 					put("name", java.util.List.of("Jessica", "Krystal"));
 				}})))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.name").value("Steven, Jessica, Krystal, Celine"));
+			.andExpect(jsonPath("$.name[0]").value("Steven"))
+			.andExpect(jsonPath("$.name[1]").value("Jessica"))
+			.andExpect(jsonPath("$.name[2]").value("Krystal"))
+			.andExpect(jsonPath("$.name[3]").value("Celine"));
 
 		verify(downstreamAggregationService).aggregateNames(java.util.List.of("Jessica", "Krystal"));
 	}
@@ -47,11 +50,12 @@ class DownstreamAggregationControllerTest {
 	@Test
 	void shouldAggregateDefaultNameWhenRequestBodyMissing() throws Exception {
 		when(downstreamAggregationService.aggregateDefaultName())
-			.thenReturn(new DownstreamNameResponse("Steven, Celine"));
+			.thenReturn(new UpstreamNameResponse(java.util.List.of("Steven", "Celine")));
 
 		mockMvc.perform(post("/api/v1/integrations/name/aggregation"))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.name").value("Steven, Celine"));
+			.andExpect(jsonPath("$.name[0]").value("Steven"))
+			.andExpect(jsonPath("$.name[1]").value("Celine"));
 
 		verify(downstreamAggregationService).aggregateDefaultName();
 	}
@@ -59,7 +63,7 @@ class DownstreamAggregationControllerTest {
 	@Test
 	void shouldAggregateDefaultNameWhenRequestArrayIsEmpty() throws Exception {
 		when(downstreamAggregationService.aggregateDefaultName())
-			.thenReturn(new DownstreamNameResponse("Steven, Celine"));
+			.thenReturn(new UpstreamNameResponse(java.util.List.of("Steven", "Celine")));
 
 		mockMvc.perform(post("/api/v1/integrations/name/aggregation")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -67,7 +71,8 @@ class DownstreamAggregationControllerTest {
 					put("name", java.util.List.of());
 				}})))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.name").value("Steven, Celine"));
+			.andExpect(jsonPath("$.name[0]").value("Steven"))
+			.andExpect(jsonPath("$.name[1]").value("Celine"));
 
 		verify(downstreamAggregationService).aggregateDefaultName();
 	}

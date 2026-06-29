@@ -1,0 +1,46 @@
+{
+  "family": "student-management-system",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024",
+  "executionRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/ecsTaskExecutionRole",
+  "taskRoleArn": "arn:aws:iam::<ACCOUNT_ID>:role/ecsTaskExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "student-management-system",
+      "image": "<ACCOUNT_ID>.dkr.ecr.<REGION>.amazonaws.com/student-management-system:latest",
+      "essential": true,
+      "portMappings": [
+        {
+          "containerPort": 8080,
+          "hostPort": 8080,
+          "protocol": "tcp"
+        }
+      ],
+      "environment": [
+        {
+          "name": "SPRING_DATASOURCE_URL",
+          "value": "jdbc:postgresql://<RDS_ENDPOINT>:5432/student_management_system"
+        },
+        {
+          "name": "SPRING_DATASOURCE_USERNAME",
+          "value": "<DB_USERNAME>"
+        },
+        {
+          "name": "SPRING_DATASOURCE_PASSWORD",
+          "value": "<DB_PASSWORD>"
+        }
+      ],
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/student-management-system",
+          "awslogs-region": "<REGION>",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}
+

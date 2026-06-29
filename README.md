@@ -10,7 +10,7 @@ A Spring Boot CRUD REST API for managing student records. This project was built
 - Spring Data JPA
 - PostgreSQL
 - Maven
-- H2 (test scope)
+- H2 (demo runtime and tests)
 
 ## Features
 
@@ -20,6 +20,7 @@ A Spring Boot CRUD REST API for managing student records. This project was built
 - Get a student by ID
 - Update a student
 - Delete a student
+- Forward a name to a downstream service so it can append its own name
 - Validation for required fields and email format
 - JSON error responses with `@RestControllerAdvice`
 - Transaction management with `@Transactional`
@@ -49,6 +50,7 @@ Base URL: `http://localhost:8080/api/v1/students`
 | `GET` | `/api/v1/students/{id}` | Get a student by ID |
 | `PUT` | `/api/v1/students/{id}` | Update a student |
 | `DELETE` | `/api/v1/students/{id}` | Delete a student |
+| `POST` | `/api/v1/integrations/name/aggregation` | Send a name to the downstream aggregation service |
 
 ## Sample Request Body
 
@@ -77,10 +79,20 @@ The application reads database settings from environment variables when availabl
 
 Default local values are already defined in [src/main/resources/application.properties](/Users/lopsun/Documents/New project 4/src/main/resources/application.properties:1).
 
+For a container-only demo without PostgreSQL, use:
+
+- `SPRING_PROFILES_ACTIVE=h2`
+
 ## Run the Project
 
 ```bash
 ./mvnw spring-boot:run
+```
+
+To run with the in-memory demo database:
+
+```bash
+SPRING_PROFILES_ACTIVE=h2 ./mvnw spring-boot:run
 ```
 
 ## Run Tests
@@ -103,14 +115,78 @@ Examples:
 - `/actuator/info`
 - `/actuator/metrics`
 
+## Downstream Aggregation Endpoint
+
+This project now includes a downstream integration endpoint for the assignment.
+
+The flow is:
+
+1. this app sends `Steven` to the downstream service
+2. the downstream service adds its own name
+3. this app returns the downstream response to the caller
+
+Local endpoint:
+
+```text
+POST /api/v1/integrations/name/aggregation
+```
+
+Default downstream target:
+
+```text
+http://18.216.74.156:8080/name/aggregation
+```
+
+Default request payload sent by this app:
+
+```json
+{
+  "name": "Steven"
+}
+```
+
+Example local request:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/integrations/name/aggregation
+```
+
+Or explicitly pass the same name:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/integrations/name/aggregation \
+  -H "Content-Type: application/json" \
+  -d '{"name":"Steven"}'
+```
+
+Expected response pattern:
+
+```json
+{
+  "name": "Steven, Jocelyn"
+}
+```
+
+Environment variables for downstream configuration:
+
+- `DOWNSTREAM_BASE_URL`
+- `DOWNSTREAM_AGGREGATION_PATH`
+- `DOWNSTREAM_DEFAULT_NAME`
+
 ## Project Structure
 
 - [src/main/java/com/studentmanagement/controller/StudentController.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/controller/StudentController.java:1)
+- [src/main/java/com/studentmanagement/controller/DownstreamAggregationController.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/controller/DownstreamAggregationController.java:1)
 - [src/main/java/com/studentmanagement/model/Student.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/model/Student.java:1)
 - [src/main/java/com/studentmanagement/repository/StudentRepository.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/repository/StudentRepository.java:1)
 - [src/main/java/com/studentmanagement/serviceimpl/StudentServiceImpl.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/serviceimpl/StudentServiceImpl.java:1)
+- [src/main/java/com/studentmanagement/service/DownstreamAggregationService.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/service/DownstreamAggregationService.java:1)
 - [src/main/java/com/studentmanagement/aspect/ServiceLoggingAspect.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/aspect/ServiceLoggingAspect.java:1)
 - [src/main/java/com/studentmanagement/exception/GlobalExceptionHandler.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/exception/GlobalExceptionHandler.java:1)
+
+## Deploy with Docker on EC2
+
+See [DEPLOY_EC2.md](/Users/lopsun/Documents/New project 4/DEPLOY_EC2.md) for the full EC2 deployment steps using the existing `Dockerfile`.
 
 ## AOP Notes
 

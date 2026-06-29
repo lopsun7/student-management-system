@@ -20,7 +20,7 @@ A Spring Boot CRUD REST API for managing student records. This project was built
 - Get a student by ID
 - Update a student
 - Delete a student
-- Forward a name to a downstream service so it can append its own name
+- Return `Steven + incoming names` for upstream integration
 - Validation for required fields and email format
 - JSON error responses with `@RestControllerAdvice`
 - Transaction management with `@Transactional`
@@ -50,7 +50,7 @@ Base URL: `http://localhost:8080/api/v1/students`
 | `GET` | `/api/v1/students/{id}` | Get a student by ID |
 | `PUT` | `/api/v1/students/{id}` | Update a student |
 | `DELETE` | `/api/v1/students/{id}` | Delete a student |
-| `POST` | `/api/v1/integrations/name/aggregation` | Send a name to the downstream aggregation service |
+| `POST` | `/api/v1/integrations/name/aggregation` | Return `Steven + incoming names` |
 
 ## Sample Request Body
 
@@ -117,13 +117,13 @@ Examples:
 
 ## Downstream Aggregation Endpoint
 
-This project now includes a downstream integration endpoint for the assignment.
+This project now includes a name aggregation endpoint for the assignment.
 
 The flow is:
 
-1. this app sends `Steven` to the downstream service
-2. the downstream service adds its own name
-3. this app returns the downstream response to the caller
+1. the upstream caller sends a string of names
+2. this app prefixes the string with `Steven`
+3. this app returns the combined result to the caller
 
 Local endpoint:
 
@@ -131,17 +131,11 @@ Local endpoint:
 POST /api/v1/integrations/name/aggregation
 ```
 
-Default downstream target:
-
-```text
-http://18.216.74.156:8080/name/aggregation
-```
-
-Default request payload sent by this app:
+Example request payload:
 
 ```json
 {
-  "name": "Steven"
+  "name": "Jessica, Amy"
 }
 ```
 
@@ -156,21 +150,19 @@ Or explicitly pass the same name:
 ```bash
 curl -X POST http://localhost:8080/api/v1/integrations/name/aggregation \
   -H "Content-Type: application/json" \
-  -d '{"name":"Steven"}'
+  -d '{"name":"Jessica, Amy"}'
 ```
 
 Expected response pattern:
 
 ```json
 {
-  "name": "Steven, Jocelyn"
+  "name": "Steven, Jessica, Amy"
 }
 ```
 
 Environment variables for downstream configuration:
 
-- `DOWNSTREAM_BASE_URL`
-- `DOWNSTREAM_AGGREGATION_PATH`
 - `DOWNSTREAM_DEFAULT_NAME`
 
 ## Project Structure

@@ -6,9 +6,8 @@ This guide uses the existing `Dockerfile` to run the Spring Boot application on 
 
 - run the Spring Boot app on EC2 with Docker
 - expose port `8080`
-- call the downstream aggregation service
-- use the default downstream message `My name is Steven`
-- let the downstream service append its own name in the response
+- receive a string of names from upstream
+- prepend `Steven` in the response
 
 ## Recommended demo setup
 
@@ -56,8 +55,6 @@ docker run -d \
   --name student-management-system \
   -p 8080:8080 \
   -e SPRING_PROFILES_ACTIVE=h2 \
-  -e DOWNSTREAM_BASE_URL=http://18.216.74.156:8080 \
-  -e DOWNSTREAM_AGGREGATION_PATH=/name/aggregation \
   -e DOWNSTREAM_DEFAULT_NAME=Steven \
   student-management-system
 ```
@@ -70,7 +67,7 @@ Health check:
 curl http://<EC2_PUBLIC_IP>:8080/actuator/health
 ```
 
-Downstream aggregation:
+Name aggregation:
 
 ```bash
 curl -X POST http://<EC2_PUBLIC_IP>:8080/api/v1/integrations/name/aggregation
@@ -81,14 +78,14 @@ Or pass the same name explicitly:
 ```bash
 curl -X POST http://<EC2_PUBLIC_IP>:8080/api/v1/integrations/name/aggregation \
   -H "Content-Type: application/json" \
-  -d '{"name":"Steven"}'
+  -d '{"name":"Jessica, Amy"}'
 ```
 
 Expected response pattern:
 
 ```json
 {
-  "name": "Steven, Jocelyn"
+  "name": "Steven, Jessica, Amy"
 }
 ```
 
@@ -109,8 +106,6 @@ docker run -d \
   -e SPRING_DATASOURCE_URL=jdbc:postgresql://<DB_HOST>:5432/student_management_system \
   -e SPRING_DATASOURCE_USERNAME=<DB_USER> \
   -e SPRING_DATASOURCE_PASSWORD=<DB_PASSWORD> \
-  -e DOWNSTREAM_BASE_URL=http://18.216.74.156:8080 \
-  -e DOWNSTREAM_AGGREGATION_PATH=/name/aggregation \
   -e DOWNSTREAM_DEFAULT_NAME=Steven \
   student-management-system
 ```

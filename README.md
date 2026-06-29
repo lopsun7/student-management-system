@@ -121,7 +121,7 @@ This project now includes a name aggregation endpoint for the assignment.
 
 The flow is:
 
-1. the upstream caller sends a string of names
+1. the upstream caller sends an array of names
 2. this app first converts it to `Steven, ...`
 3. this app POSTs that result to the downstream service
 4. this app returns the downstream response to the caller
@@ -136,7 +136,7 @@ Copy-ready request body:
 
 ```json
 {
-  "name": "..."
+  "name": ["...", "..."]
 }
 ```
 
@@ -151,7 +151,7 @@ Or explicitly pass names in the request body:
 ```bash
 curl -X POST http://localhost:8080/api/v1/integrations/name/aggregation \
   -H "Content-Type: application/json" \
-  -d '{"name":"..."}'
+  -d '{"name":["...","..."]}'
 ```
 
 Copy-ready response body:

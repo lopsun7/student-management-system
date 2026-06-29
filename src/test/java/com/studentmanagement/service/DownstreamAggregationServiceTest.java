@@ -32,7 +32,7 @@ class DownstreamAggregationServiceTest {
 				{"name":"Steven, Jessica, Amy, Celine"}
 				""", MediaType.APPLICATION_JSON));
 
-		DownstreamNameResponse response = downstreamAggregationService.aggregateName("Jessica, Amy");
+		DownstreamNameResponse response = downstreamAggregationService.aggregateNames(java.util.List.of("Jessica", "Amy"));
 
 		assertThat(response.name()).isEqualTo("Steven, Jessica, Amy, Celine");
 		mockRestServiceServer.verify();
@@ -50,7 +50,7 @@ class DownstreamAggregationServiceTest {
 				{"name":"Steven, Celine"}
 				""", MediaType.APPLICATION_JSON));
 
-		DownstreamNameResponse response = downstreamAggregationService.aggregateName("   ");
+		DownstreamNameResponse response = downstreamAggregationService.aggregateNames(java.util.List.of("   ", ""));
 
 		assertThat(response.name()).isEqualTo("Steven, Celine");
 		mockRestServiceServer.verify();

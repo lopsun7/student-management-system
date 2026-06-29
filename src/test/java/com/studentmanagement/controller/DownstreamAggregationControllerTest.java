@@ -29,19 +29,19 @@ class DownstreamAggregationControllerTest {
 	private DownstreamAggregationService downstreamAggregationService;
 
 	@Test
-	void shouldAggregateProvidedName() throws Exception {
-		when(downstreamAggregationService.aggregateName("Steven"))
-			.thenReturn(new DownstreamNameResponse("Steven, Steven, Celine"));
+	void shouldAggregateProvidedNames() throws Exception {
+		when(downstreamAggregationService.aggregateNames(java.util.List.of("Jessica", "Krystal")))
+			.thenReturn(new DownstreamNameResponse("Steven, Jessica, Krystal, Celine"));
 
 		mockMvc.perform(post("/api/v1/integrations/name/aggregation")
 				.contentType(MediaType.APPLICATION_JSON)
-				.content(objectMapper.writeValueAsString(new java.util.LinkedHashMap<String, String>() {{
-					put("name", "Steven");
+				.content(objectMapper.writeValueAsString(new java.util.LinkedHashMap<String, java.util.List<String>>() {{
+					put("name", java.util.List.of("Jessica", "Krystal"));
 				}})))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.name").value("Steven, Steven, Celine"));
+			.andExpect(jsonPath("$.name").value("Steven, Jessica, Krystal, Celine"));
 
-		verify(downstreamAggregationService).aggregateName("Steven");
+		verify(downstreamAggregationService).aggregateNames(java.util.List.of("Jessica", "Krystal"));
 	}
 
 	@Test
@@ -50,6 +50,22 @@ class DownstreamAggregationControllerTest {
 			.thenReturn(new DownstreamNameResponse("Steven, Celine"));
 
 		mockMvc.perform(post("/api/v1/integrations/name/aggregation"))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.name").value("Steven, Celine"));
+
+		verify(downstreamAggregationService).aggregateDefaultName();
+	}
+
+	@Test
+	void shouldAggregateDefaultNameWhenRequestArrayIsEmpty() throws Exception {
+		when(downstreamAggregationService.aggregateDefaultName())
+			.thenReturn(new DownstreamNameResponse("Steven, Celine"));
+
+		mockMvc.perform(post("/api/v1/integrations/name/aggregation")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(new java.util.LinkedHashMap<String, java.util.List<String>>() {{
+					put("name", java.util.List.of());
+				}})))
 			.andExpect(status().isOk())
 			.andExpect(jsonPath("$.name").value("Steven, Celine"));
 

@@ -6,7 +6,7 @@ This guide uses the existing `Dockerfile` to run the Spring Boot application on 
 
 - run the Spring Boot app on EC2 with Docker
 - expose port `8080`
-- receive a string of names from upstream
+- receive an array of names from upstream
 - convert it to `Steven, ...`
 - forward that payload to the downstream service
 - return the downstream response
@@ -80,7 +80,7 @@ Or pass names in the request body:
 ```bash
 curl -X POST http://<EC2_PUBLIC_IP>:8080/api/v1/integrations/name/aggregation \
   -H "Content-Type: application/json" \
-  -d '{"name":"..."}'
+  -d '{"name":["...","..."]}'
 ```
 
 Copy-ready response body:

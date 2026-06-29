@@ -2,6 +2,7 @@ package com.studentmanagement.service;
 
 import com.studentmanagement.dto.DownstreamNameRequest;
 import com.studentmanagement.dto.DownstreamNameResponse;
+import java.util.List;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
@@ -28,12 +29,24 @@ public class DownstreamAggregationService {
 		return forwardToDownstream(defaultName);
 	}
 
-	public DownstreamNameResponse aggregateName(String names) {
-		String normalizedNames = StringUtils.hasText(names) ? names.trim() : "";
+	public DownstreamNameResponse aggregateNames(List<String> names) {
+		String normalizedNames = normalizeNames(names);
 		if (normalizedNames.isEmpty()) {
 			return aggregateDefaultName();
 		}
 		return forwardToDownstream(defaultName + ", " + normalizedNames);
+	}
+
+	private String normalizeNames(List<String> names) {
+		if (names == null || names.isEmpty()) {
+			return "";
+		}
+		return names.stream()
+			.filter(StringUtils::hasText)
+			.map(String::trim)
+			.filter(StringUtils::hasText)
+			.reduce((left, right) -> left + ", " + right)
+			.orElse("");
 	}
 
 	private DownstreamNameResponse forwardToDownstream(String aggregatedName) {

@@ -31,7 +31,7 @@ class DownstreamAggregationControllerTest {
 	@Test
 	void shouldAggregateProvidedName() throws Exception {
 		when(downstreamAggregationService.aggregateName("Steven"))
-			.thenReturn(new DownstreamNameResponse("Steven, Steven"));
+			.thenReturn(new DownstreamNameResponse("Steven, Steven, Celine"));
 
 		mockMvc.perform(post("/api/v1/integrations/name/aggregation")
 				.contentType(MediaType.APPLICATION_JSON)
@@ -39,7 +39,7 @@ class DownstreamAggregationControllerTest {
 					put("name", "Steven");
 				}})))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.name").value("Steven, Steven"));
+			.andExpect(jsonPath("$.name").value("Steven, Steven, Celine"));
 
 		verify(downstreamAggregationService).aggregateName("Steven");
 	}
@@ -47,11 +47,11 @@ class DownstreamAggregationControllerTest {
 	@Test
 	void shouldAggregateDefaultNameWhenRequestBodyMissing() throws Exception {
 		when(downstreamAggregationService.aggregateDefaultName())
-			.thenReturn(new DownstreamNameResponse("Steven"));
+			.thenReturn(new DownstreamNameResponse("Steven, Celine"));
 
 		mockMvc.perform(post("/api/v1/integrations/name/aggregation"))
 			.andExpect(status().isOk())
-			.andExpect(jsonPath("$.name").value("Steven"));
+			.andExpect(jsonPath("$.name").value("Steven, Celine"));
 
 		verify(downstreamAggregationService).aggregateDefaultName();
 	}

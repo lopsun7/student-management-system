@@ -50,7 +50,7 @@ Base URL: `http://localhost:8080/api/v1/students`
 | `GET` | `/api/v1/students/{id}` | Get a student by ID |
 | `PUT` | `/api/v1/students/{id}` | Update a student |
 | `DELETE` | `/api/v1/students/{id}` | Delete a student |
-| `POST` | `/api/v1/integrations/name/aggregation` | Return `Steven + incoming names` |
+| `POST` | `/api/v1/integrations/name/aggregation` | Return the downstream result after forwarding `Steven + incoming names` |
 
 ## Sample Request Body
 
@@ -122,8 +122,9 @@ This project now includes a name aggregation endpoint for the assignment.
 The flow is:
 
 1. the upstream caller sends a string of names
-2. this app prefixes the string with `Steven`
-3. this app returns the combined result to the caller
+2. this app first converts it to `Steven, ...`
+3. this app POSTs that result to the downstream service
+4. this app returns the downstream response to the caller
 
 Local endpoint:
 
@@ -157,12 +158,14 @@ Copy-ready response body:
 
 ```json
 {
-  "name": "Steven, ..."
+  "name": "Steven, ..., Celine"
 }
 ```
 
 Environment variables for downstream configuration:
 
+- `DOWNSTREAM_BASE_URL`
+- `DOWNSTREAM_AGGREGATION_PATH`
 - `DOWNSTREAM_DEFAULT_NAME`
 
 ## Project Structure

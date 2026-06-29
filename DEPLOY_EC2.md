@@ -7,7 +7,9 @@ This guide uses the existing `Dockerfile` to run the Spring Boot application on 
 - run the Spring Boot app on EC2 with Docker
 - expose port `8080`
 - receive a string of names from upstream
-- prepend `Steven` in the response
+- convert it to `Steven, ...`
+- forward that payload to the downstream service
+- return the downstream response
 
 ## Recommended demo setup
 
@@ -85,7 +87,7 @@ Copy-ready response body:
 
 ```json
 {
-  "name": "Steven, ..."
+  "name": "Steven, ..., Celine"
 }
 ```
 

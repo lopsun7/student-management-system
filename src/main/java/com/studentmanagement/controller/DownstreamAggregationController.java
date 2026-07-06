@@ -1,6 +1,5 @@
 package com.studentmanagement.controller;
 
-import com.studentmanagement.dto.DownstreamNameResponse;
 import com.studentmanagement.dto.UpstreamNameRequest;
 import com.studentmanagement.dto.UpstreamNameResponse;
 import com.studentmanagement.service.DownstreamAggregationService;

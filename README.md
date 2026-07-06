@@ -98,8 +98,17 @@ SPRING_PROFILES_ACTIVE=h2 ./mvnw spring-boot:run
 ## Run Tests
 
 ```bash
-./mvnw test
+./mvnw clean verify
 ```
+
+This runs all JUnit 5 tests, generates the JaCoCo report, and fails the build if instruction coverage drops below 90%.
+
+Current verified result:
+
+- Tests: 41 passed
+- JaCoCo instruction coverage: 96.51%
+- HTML report: `target/site/jacoco/index.html`
+- XML report for SonarQube: `target/site/jacoco/jacoco.xml`
 
 ## Actuator Endpoints
 
@@ -182,6 +191,39 @@ Environment variables for downstream configuration:
 ## Deploy with Docker on EC2
 
 See [DEPLOY_EC2.md](/Users/lopsun/Documents/New project 4/DEPLOY_EC2.md) for the full EC2 deployment steps using the existing `Dockerfile`.
+
+## Jenkins Pipeline
+
+This repo includes a [Jenkinsfile](/Users/lopsun/Documents/New project 4/Jenkinsfile:1) for CI/CD:
+
+- GitHub webhook triggers Jenkins on branch updates
+- Jenkins runs `./mvnw clean verify`
+- JaCoCo enforces 90%+ unit/integration test coverage
+- SonarQube scans code quality using the generated JaCoCo XML report
+- the SonarQube quality gate can block deployment if quality checks fail
+- merges into the `dev` branch deploy to EC2
+- EC2 rebuilds and restarts the Docker container
+
+See [JENKINS_PIPELINE.md](/Users/lopsun/Documents/New project 4/JENKINS_PIPELINE.md) for the Jenkins credential, webhook, and branch setup.
+
+## Testing Strategy
+
+The tests mirror the source directory structure:
+
+- controller tests verify REST endpoints through MockMvc
+- service implementation tests use Mockito for isolated business logic
+- repository integration tests use H2 with the real schema
+- client tests start a local HTTP server and verify the downstream POST body
+- configuration, exception, DTO, and model tests cover supporting behavior
+
+## Resilience4j Circuit Breaker
+
+The downstream name aggregation flow uses Resilience4j for reliability:
+
+- `@Retry` retries failed downstream calls
+- `@CircuitBreaker` opens the circuit when downstream failures pass the configured threshold
+- `fallbackMethod` downgrades the service by returning the locally aggregated names
+- failed requests are persisted for async recovery
 
 ## AOP Notes
 

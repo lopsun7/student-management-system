@@ -40,6 +40,14 @@ public class GlobalExceptionHandler {
 		);
 	}
 
+	@ExceptionHandler(DownstreamRequestFailedException.class)
+	public ResponseEntity<ApiErrorResponse> handleDownstreamRequestFailure(
+		DownstreamRequestFailedException exception,
+		HttpServletRequest request
+	) {
+		return buildResponse(HttpStatus.SERVICE_UNAVAILABLE, exception.getMessage(), request.getRequestURI(), null);
+	}
+
 	private ResponseEntity<ApiErrorResponse> buildResponse(
 		HttpStatus status,
 		String message,

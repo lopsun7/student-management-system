@@ -8,6 +8,8 @@ A Spring Boot CRUD REST API for managing student records. This project was built
 - Spring Boot 3.5
 - Spring Web
 - Spring Data JPA
+- Spring Security
+- Spring OAuth2 Resource Server
 - PostgreSQL
 - Maven
 - H2 (demo runtime and tests)
@@ -21,6 +23,8 @@ A Spring Boot CRUD REST API for managing student records. This project was built
 - Update a student
 - Delete a student
 - Return `Steven + incoming names` for upstream integration
+- Issue local demo OAuth2-style JWT access tokens
+- Protect student management APIs with Bearer token authentication
 - Validation for required fields and email format
 - JSON error responses with `@RestControllerAdvice`
 - Transaction management with `@Transactional`
@@ -50,6 +54,7 @@ Base URL: `http://localhost:8080/api/v1/students`
 | `GET` | `/api/v1/students/{id}` | Get a student by ID |
 | `PUT` | `/api/v1/students/{id}` | Update a student |
 | `DELETE` | `/api/v1/students/{id}` | Delete a student |
+| `POST` | `/api/v1/auth/token` | Exchange demo username/password for a Bearer JWT |
 | `POST` | `/api/v1/integrations/name/aggregation` | Return the downstream result after forwarding `Steven + incoming names` |
 
 ## Sample Request Body
@@ -95,6 +100,63 @@ To run with the in-memory demo database:
 SPRING_PROFILES_ACTIVE=h2 ./mvnw spring-boot:run
 ```
 
+## OAuth2 and Spring Security
+
+The student management APIs are protected by Spring Security and OAuth2 Resource Server JWT validation.
+
+Public endpoints:
+
+- `POST /api/v1/auth/token`
+- `POST /api/v1/integrations/name/aggregation`
+- `GET /actuator/health`
+- `GET /actuator/info`
+
+Protected endpoints:
+
+- `GET /api/v1/students`
+- `GET /api/v1/students/search?course=Java`
+- `POST /api/v1/students`
+- `GET /api/v1/students/{id}`
+- `PUT /api/v1/students/{id}`
+- `DELETE /api/v1/students/{id}`
+
+Demo users:
+
+```text
+username: steven
+password: password123
+
+username: admin
+password: admin123
+```
+
+Get an access token:
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/token \
+  -H "Content-Type: application/json" \
+  -d '{"username":"steven","password":"password123"}' \
+  | sed -n 's/.*"accessToken":"\([^"]*\)".*/\1/p')
+```
+
+Call a protected API with the Bearer token:
+
+```bash
+curl http://localhost:8080/api/v1/students \
+  -H "Authorization: Bearer ${TOKEN}"
+```
+
+Without a token, protected APIs return `401 Unauthorized`.
+
+Security-related environment variables:
+
+- `JWT_SECRET`: HMAC secret used to sign local demo JWTs. Change this outside local demos.
+- `JWT_EXPIRATION_MINUTES`: token lifetime, default `60`.
+- `DEMO_USER_USERNAME`
+- `DEMO_USER_PASSWORD`
+- `DEMO_ADMIN_USERNAME`
+- `DEMO_ADMIN_PASSWORD`
+
 ## Run Tests
 
 ```bash
@@ -105,8 +167,8 @@ This runs all JUnit 5 tests, generates the JaCoCo report, and fails the build if
 
 Current verified result:
 
-- Tests: 41 passed
-- JaCoCo instruction coverage: 96.51%
+- Tests: 45 passed
+- JaCoCo instruction coverage: 97.15%
 - HTML report: `target/site/jacoco/index.html`
 - XML report for SonarQube: `target/site/jacoco/jacoco.xml`
 
@@ -180,7 +242,9 @@ Environment variables for downstream configuration:
 ## Project Structure
 
 - [src/main/java/com/studentmanagement/controller/StudentController.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/controller/StudentController.java:1)
+- [src/main/java/com/studentmanagement/controller/AuthController.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/controller/AuthController.java:1)
 - [src/main/java/com/studentmanagement/controller/DownstreamAggregationController.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/controller/DownstreamAggregationController.java:1)
+- [src/main/java/com/studentmanagement/config/SecurityConfig.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/config/SecurityConfig.java:1)
 - [src/main/java/com/studentmanagement/model/Student.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/model/Student.java:1)
 - [src/main/java/com/studentmanagement/repository/StudentRepository.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/repository/StudentRepository.java:1)
 - [src/main/java/com/studentmanagement/serviceimpl/StudentServiceImpl.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/serviceimpl/StudentServiceImpl.java:1)

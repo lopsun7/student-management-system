@@ -10,6 +10,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 
 @ExtendWith(MockitoExtension.class)
 class GlobalExceptionHandlerTest {
@@ -49,5 +50,21 @@ class GlobalExceptionHandlerTest {
 		assertThat(response.getBody().status()).isEqualTo(503);
 		assertThat(response.getBody().message()).isEqualTo("Downstream failed");
 		assertThat(response.getBody().path()).isEqualTo("/api/v1/integrations/name/aggregation");
+	}
+
+	@Test
+	void shouldReturnUnauthorizedForAuthenticationFailure() {
+		when(request.getRequestURI()).thenReturn("/api/v1/auth/token");
+
+		ResponseEntity<ApiErrorResponse> response = handler.handleAuthenticationFailure(
+			new BadCredentialsException("Bad credentials"),
+			request
+		);
+
+		assertThat(response.getStatusCode()).isEqualTo(HttpStatus.UNAUTHORIZED);
+		assertThat(response.getBody()).isNotNull();
+		assertThat(response.getBody().status()).isEqualTo(401);
+		assertThat(response.getBody().message()).isEqualTo("Invalid username or password");
+		assertThat(response.getBody().path()).isEqualTo("/api/v1/auth/token");
 	}
 }

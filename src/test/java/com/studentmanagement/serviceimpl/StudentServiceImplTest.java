@@ -10,6 +10,7 @@ import com.studentmanagement.exception.ResourceNotFoundException;
 import com.studentmanagement.model.Student;
 import com.studentmanagement.repository.StudentRepository;
 import com.studentmanagement.service.StudentAsyncService;
+import com.studentmanagement.service.StudentEventPublisher;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -28,6 +29,9 @@ class StudentServiceImplTest {
 
 	@Mock
 	private StudentAsyncService studentAsyncService;
+
+	@Mock
+	private StudentEventPublisher studentEventPublisher;
 
 	@InjectMocks
 	private StudentServiceImpl studentService;
@@ -64,6 +68,7 @@ class StudentServiceImplTest {
 		assertThat(savedStudent.getEmail()).isEqualTo("steven@example.com");
 		assertThat(savedStudent.getCourse()).isEqualTo("Java");
 		verify(studentAsyncService).logStudentCreated(10L, "steven@example.com");
+		verify(studentEventPublisher).publishStudentCreated(savedStudent);
 	}
 
 	@Test

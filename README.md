@@ -10,6 +10,7 @@ A Spring Boot CRUD REST API for managing student records. This project was built
 - Spring Data JPA
 - Spring Security
 - Spring OAuth2 Resource Server
+- Spring Kafka
 - PostgreSQL
 - Maven
 - H2 (demo runtime and tests)
@@ -25,6 +26,8 @@ A Spring Boot CRUD REST API for managing student records. This project was built
 - Return `Steven + incoming names` for upstream integration
 - Issue local demo OAuth2-style JWT access tokens
 - Protect student management APIs with Bearer token authentication
+- Publish student-created events to Kafka
+- Consume Kafka events with a consumer group using 3-way parallel processing
 - Validation for required fields and email format
 - JSON error responses with `@RestControllerAdvice`
 - Transaction management with `@Transactional`
@@ -56,6 +59,9 @@ Base URL: `http://localhost:8080/api/v1/students`
 | `DELETE` | `/api/v1/students/{id}` | Delete a student |
 | `POST` | `/api/v1/auth/token` | Exchange demo username/password for a Bearer JWT |
 | `POST` | `/api/v1/integrations/name/aggregation` | Return the downstream result after forwarding `Steven + incoming names` |
+| `POST` | `/api/v1/kafka/student-events` | Publish a Kafka validation event when Kafka is enabled |
+| `GET` | `/api/v1/kafka/consumed-events` | Read consumed Kafka validation events when Kafka is enabled |
+| `DELETE` | `/api/v1/kafka/consumed-events` | Clear consumed Kafka validation events when Kafka is enabled |
 
 ## Sample Request Body
 
@@ -167,8 +173,8 @@ This runs all JUnit 5 tests, generates the JaCoCo report, and fails the build if
 
 Current verified result:
 
-- Tests: 45 passed
-- JaCoCo instruction coverage: 97.15%
+- Tests: 50 passed
+- JaCoCo instruction coverage: 93.33%
 - HTML report: `target/site/jacoco/index.html`
 - XML report for SonarQube: `target/site/jacoco/jacoco.xml`
 
@@ -239,12 +245,102 @@ Environment variables for downstream configuration:
 - `DOWNSTREAM_AGGREGATION_PATH`
 - `DOWNSTREAM_DEFAULT_NAME`
 
+## Kafka Integration
+
+Homework 22 adds Kafka to the project with:
+
+- a 3-broker Docker Kafka cluster in [docker-compose.kafka.yml](/Users/lopsun/Documents/New project 4/docker-compose.kafka.yml:1)
+- topic auto-creation with 3 partitions and replication factor 3
+- a Spring Kafka producer for `STUDENT_CREATED` events
+- a Spring Kafka consumer group using concurrency `3` for parallel processing
+- validation endpoints to publish and read consumed events
+- an embedded Kafka integration test that validates real produce and consume behavior
+
+Kafka is disabled by default so the normal CRUD app can still run without a local broker. Enable it for the Kafka assignment demo:
+
+```bash
+docker compose -f docker-compose.kafka.yml up -d
+```
+
+Start the app with Kafka enabled:
+
+```bash
+KAFKA_ENABLED=true \
+SPRING_PROFILES_ACTIVE=h2 \
+KAFKA_BOOTSTRAP_SERVERS=localhost:9092,localhost:9093,localhost:9094 \
+./mvnw spring-boot:run
+```
+
+Get a JWT token:
+
+```bash
+TOKEN=$(curl -s -X POST http://localhost:8080/api/v1/auth/token \
+  -H "Content-Type: application/json" \
+  -d '{"username":"steven","password":"password123"}' \
+  | sed -n 's/.*"accessToken":"\([^"]*\)".*/\1/p')
+```
+
+Creating a student publishes a Kafka event:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/students \
+  -H "Authorization: Bearer ${TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "firstName": "Steven",
+    "lastName": "Zhao",
+    "email": "steven.kafka@example.com",
+    "course": "Kafka"
+  }'
+```
+
+You can also publish a validation event directly:
+
+```bash
+curl -X POST http://localhost:8080/api/v1/kafka/student-events \
+  -H "Authorization: Bearer ${TOKEN}" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "eventType": "STUDENT_CREATED",
+    "studentId": 100,
+    "email": "steven.kafka@example.com",
+    "course": "Kafka"
+  }'
+```
+
+Check consumed events:
+
+```bash
+curl http://localhost:8080/api/v1/kafka/consumed-events \
+  -H "Authorization: Bearer ${TOKEN}"
+```
+
+Validate topic partition and replica configuration:
+
+```bash
+docker exec kafka-1 kafka-topics \
+  --bootstrap-server kafka-1:29092 \
+  --describe \
+  --topic student-events
+```
+
+Expected result includes:
+
+```text
+PartitionCount: 3
+ReplicationFactor: 3
+```
+
 ## Project Structure
 
 - [src/main/java/com/studentmanagement/controller/StudentController.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/controller/StudentController.java:1)
 - [src/main/java/com/studentmanagement/controller/AuthController.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/controller/AuthController.java:1)
 - [src/main/java/com/studentmanagement/controller/DownstreamAggregationController.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/controller/DownstreamAggregationController.java:1)
+- [src/main/java/com/studentmanagement/controller/KafkaValidationController.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/controller/KafkaValidationController.java:1)
 - [src/main/java/com/studentmanagement/config/SecurityConfig.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/config/SecurityConfig.java:1)
+- [src/main/java/com/studentmanagement/config/KafkaTopicConfig.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/config/KafkaTopicConfig.java:1)
+- [src/main/java/com/studentmanagement/kafka/KafkaStudentEventPublisher.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/kafka/KafkaStudentEventPublisher.java:1)
+- [src/main/java/com/studentmanagement/kafka/StudentEventConsumer.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/kafka/StudentEventConsumer.java:1)
 - [src/main/java/com/studentmanagement/model/Student.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/model/Student.java:1)
 - [src/main/java/com/studentmanagement/repository/StudentRepository.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/repository/StudentRepository.java:1)
 - [src/main/java/com/studentmanagement/serviceimpl/StudentServiceImpl.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/serviceimpl/StudentServiceImpl.java:1)

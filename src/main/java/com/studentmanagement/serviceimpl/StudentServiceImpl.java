@@ -4,6 +4,7 @@ import com.studentmanagement.exception.ResourceNotFoundException;
 import com.studentmanagement.model.Student;
 import com.studentmanagement.repository.StudentRepository;
 import com.studentmanagement.service.StudentAsyncService;
+import com.studentmanagement.service.StudentEventPublisher;
 import com.studentmanagement.service.StudentService;
 import java.util.HashMap;
 import java.util.List;
@@ -21,10 +22,15 @@ public class StudentServiceImpl implements StudentService {
 
 	private final StudentRepository studentRepository;
 	private final StudentAsyncService studentAsyncService;
+	private final StudentEventPublisher studentEventPublisher;
 
-	public StudentServiceImpl(StudentRepository studentRepository, StudentAsyncService studentAsyncService) {
+	public StudentServiceImpl(
+			StudentRepository studentRepository,
+			StudentAsyncService studentAsyncService,
+			StudentEventPublisher studentEventPublisher) {
 		this.studentRepository = studentRepository;
 		this.studentAsyncService = studentAsyncService;
+		this.studentEventPublisher = studentEventPublisher;
 	}
 
 	@Override
@@ -44,6 +50,7 @@ public class StudentServiceImpl implements StudentService {
 		prepareStudentForSave(student);
 		Student savedStudent = studentRepository.save(student);
 		studentAsyncService.logStudentCreated(savedStudent.getId(), savedStudent.getEmail());
+		studentEventPublisher.publishStudentCreated(savedStudent);
 		return savedStudent;
 	}
 

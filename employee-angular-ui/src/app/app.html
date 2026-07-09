@@ -1,0 +1,148 @@
+<main class="shell">
+  <section class="hero">
+    <p class="eyebrow">Homework 23</p>
+    <h1>Employee Command Center</h1>
+    <p class="summary">
+      Angular UI integrated with the Spring Boot backend. Login with demo credentials or a
+      Gmail address, then create, read, update, and delete employees.
+    </p>
+
+    <div class="proof-strip">
+      <span>Angular</span>
+      <span>JWT Login</span>
+      <span>Gmail Demo</span>
+      <span>CRUD</span>
+    </div>
+  </section>
+
+  @if (!isLoggedIn()) {
+    <section class="login-card">
+      <div class="tabs" aria-label="Login method">
+        <button [class.active]="loginMode() === 'password'" (click)="loginMode.set('password')">
+          Username
+        </button>
+        <button [class.active]="loginMode() === 'gmail'" (click)="loginMode.set('gmail')">
+          Gmail
+        </button>
+      </div>
+
+      @if (loginMode() === 'password') {
+        <form class="form-stack" (ngSubmit)="loginWithPassword()">
+          <label>
+            Username
+            <input name="username" [(ngModel)]="username" autocomplete="username" />
+          </label>
+          <label>
+            Password
+            <input
+              name="password"
+              [(ngModel)]="password"
+              type="password"
+              autocomplete="current-password"
+            />
+          </label>
+          <button class="primary" type="submit" [disabled]="loading()">
+            {{ loading() ? 'Signing in...' : 'Sign in' }}
+          </button>
+          <p class="hint">Demo user: <strong>steven</strong> / <strong>password123</strong></p>
+        </form>
+      } @else {
+        <form class="form-stack" (ngSubmit)="loginWithGmail()">
+          <label>
+            Gmail account
+            <input name="gmail" [(ngModel)]="gmailEmail" placeholder="your.name@gmail.com" />
+          </label>
+          <button class="gmail" type="submit" [disabled]="loading()">
+            {{ loading() ? 'Checking Gmail...' : 'Continue with Gmail' }}
+          </button>
+          <p class="hint">Demo OAuth path: accepts valid addresses ending in <strong>@gmail.com</strong>.</p>
+        </form>
+      }
+
+      @if (message()) {
+        <p class="message error">{{ message() }}</p>
+      }
+    </section>
+  } @else {
+    <section class="workspace">
+      <div class="toolbar">
+        <div>
+          <p class="eyebrow">Authenticated</p>
+          <h2>Employee CRUD</h2>
+        </div>
+        <div class="toolbar-actions">
+          <button class="ghost" type="button" (click)="loadEmployees()">Refresh</button>
+          <button class="danger" type="button" (click)="logout()">Logout</button>
+        </div>
+      </div>
+
+      <form class="employee-form" (ngSubmit)="saveEmployee()">
+        <label>
+          First name
+          <input name="firstName" [(ngModel)]="formEmployee.firstName" required />
+        </label>
+        <label>
+          Last name
+          <input name="lastName" [(ngModel)]="formEmployee.lastName" required />
+        </label>
+        <label>
+          Email
+          <input name="email" [(ngModel)]="formEmployee.email" type="email" required />
+        </label>
+        <label>
+          Department
+          <input name="department" [(ngModel)]="formEmployee.department" required />
+        </label>
+        <button class="primary" type="submit" [disabled]="loading()">
+          {{ formEmployee.id ? 'Update employee' : 'Create employee' }}
+        </button>
+        @if (formEmployee.id) {
+          <button class="ghost" type="button" (click)="resetForm()">Cancel edit</button>
+        }
+      </form>
+
+      @if (message()) {
+        <p class="message">{{ message() }}</p>
+      }
+
+      <div class="table-card">
+        <div class="table-heading">
+          <h3>Employees</h3>
+          <span>{{ employees().length }} records</span>
+        </div>
+
+        @if (employees().length === 0) {
+          <p class="empty">No employees yet. Create the first one above.</p>
+        } @else {
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Email</th>
+                <th>Department</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (employee of employees(); track employee.id) {
+                <tr>
+                  <td>#{{ employee.id }}</td>
+                  <td>{{ employee.firstName }} {{ employee.lastName }}</td>
+                  <td>{{ employee.email }}</td>
+                  <td>
+                    <span class="pill">{{ employee.department }}</span>
+                  </td>
+                  <td class="row-actions">
+                    <button type="button" class="ghost" (click)="editEmployee(employee)">Edit</button>
+                    <button type="button" class="danger" (click)="deleteEmployee(employee)">Delete</button>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </section>
+  }
+</main>

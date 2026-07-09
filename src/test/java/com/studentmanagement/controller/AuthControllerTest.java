@@ -9,6 +9,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.studentmanagement.dto.AuthTokenRequest;
+import com.studentmanagement.dto.GmailLoginRequest;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
@@ -52,6 +53,32 @@ class AuthControllerTest {
 		mockMvc.perform(get("/api/v1/students")
 				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
 			.andExpect(status().isOk());
+	}
+
+	@Test
+	void shouldIssueBearerTokenForGmailDemoLogin() throws Exception {
+		MvcResult tokenResult = mockMvc.perform(post("/api/v1/auth/gmail-demo")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(new GmailLoginRequest("steven.demo@gmail.com"))))
+			.andExpect(status().isOk())
+			.andExpect(jsonPath("$.tokenType").value("Bearer"))
+			.andExpect(jsonPath("$.accessToken").isNotEmpty())
+			.andReturn();
+
+		JsonNode tokenResponse = objectMapper.readTree(tokenResult.getResponse().getContentAsString());
+		String accessToken = tokenResponse.get("accessToken").asText();
+
+		mockMvc.perform(get("/api/v1/employees")
+				.header(HttpHeaders.AUTHORIZATION, "Bearer " + accessToken))
+			.andExpect(status().isOk());
+	}
+
+	@Test
+	void shouldRejectNonGmailDemoLogin() throws Exception {
+		mockMvc.perform(post("/api/v1/auth/gmail-demo")
+				.contentType(MediaType.APPLICATION_JSON)
+				.content(objectMapper.writeValueAsString(new GmailLoginRequest("steven@example.com"))))
+			.andExpect(status().isBadRequest());
 	}
 
 	@Test

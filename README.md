@@ -11,6 +11,7 @@ A Spring Boot CRUD REST API for managing student records. This project was built
 - Spring Security
 - Spring OAuth2 Resource Server
 - Spring Kafka
+- Angular 20 UI
 - PostgreSQL
 - Maven
 - H2 (demo runtime and tests)
@@ -18,6 +19,7 @@ A Spring Boot CRUD REST API for managing student records. This project was built
 ## Features
 
 - Create a student
+- Create an employee through the Angular UI and employee API
 - Get all students
 - Search students by course with `@RequestParam`
 - Get a student by ID
@@ -25,6 +27,7 @@ A Spring Boot CRUD REST API for managing student records. This project was built
 - Delete a student
 - Return `Steven + incoming names` for upstream integration
 - Issue local demo OAuth2-style JWT access tokens
+- Support username/password login and demo Gmail login for the Angular UI
 - Protect student management APIs with Bearer token authentication
 - Publish student-created events to Kafka
 - Consume Kafka events with a consumer group using 3-way parallel processing
@@ -58,6 +61,12 @@ Base URL: `http://localhost:8080/api/v1/students`
 | `PUT` | `/api/v1/students/{id}` | Update a student |
 | `DELETE` | `/api/v1/students/{id}` | Delete a student |
 | `POST` | `/api/v1/auth/token` | Exchange demo username/password for a Bearer JWT |
+| `POST` | `/api/v1/auth/gmail-demo` | Exchange a demo Gmail address for a Bearer JWT |
+| `GET` | `/api/v1/employees` | Get all employees for Angular UI |
+| `POST` | `/api/v1/employees` | Create an employee for Angular UI |
+| `GET` | `/api/v1/employees/{id}` | Get an employee by ID for Angular UI |
+| `PUT` | `/api/v1/employees/{id}` | Update an employee for Angular UI |
+| `DELETE` | `/api/v1/employees/{id}` | Delete an employee for Angular UI |
 | `POST` | `/api/v1/integrations/name/aggregation` | Return the downstream result after forwarding `Steven + incoming names` |
 | `POST` | `/api/v1/kafka/student-events` | Publish a Kafka validation event when Kafka is enabled |
 | `GET` | `/api/v1/kafka/consumed-events` | Read consumed Kafka validation events when Kafka is enabled |
@@ -106,6 +115,58 @@ To run with the in-memory demo database:
 SPRING_PROFILES_ACTIVE=h2 ./mvnw spring-boot:run
 ```
 
+## Angular Employee UI
+
+Homework 23 adds an Angular UI in [employee-angular-ui](/Users/lopsun/Documents/New project 4/employee-angular-ui:1).
+
+The UI supports:
+
+- username/password login through `POST /api/v1/auth/token`
+- demo Gmail login through `POST /api/v1/auth/gmail-demo`
+- employee CRUD through `GET/POST/PUT/DELETE /api/v1/employees`
+- Bearer token storage in `localStorage`
+- CORS from `http://localhost:4200` to the Spring Boot backend
+
+Start the backend:
+
+```bash
+SPRING_PROFILES_ACTIVE=h2 ./mvnw spring-boot:run
+```
+
+Start the Angular UI in another terminal:
+
+```bash
+cd employee-angular-ui
+pnpm install
+pnpm start
+```
+
+Open:
+
+```text
+http://localhost:4200
+```
+
+Demo username/password login:
+
+```text
+username: steven
+password: password123
+```
+
+Demo Gmail login:
+
+```text
+steven.demo@gmail.com
+```
+
+Build the Angular UI:
+
+```bash
+cd employee-angular-ui
+pnpm build
+```
+
 ## OAuth2 and Spring Security
 
 The student management APIs are protected by Spring Security and OAuth2 Resource Server JWT validation.
@@ -113,6 +174,7 @@ The student management APIs are protected by Spring Security and OAuth2 Resource
 Public endpoints:
 
 - `POST /api/v1/auth/token`
+- `POST /api/v1/auth/gmail-demo`
 - `POST /api/v1/integrations/name/aggregation`
 - `GET /actuator/health`
 - `GET /actuator/info`
@@ -125,6 +187,11 @@ Protected endpoints:
 - `GET /api/v1/students/{id}`
 - `PUT /api/v1/students/{id}`
 - `DELETE /api/v1/students/{id}`
+- `GET /api/v1/employees`
+- `POST /api/v1/employees`
+- `GET /api/v1/employees/{id}`
+- `PUT /api/v1/employees/{id}`
+- `DELETE /api/v1/employees/{id}`
 
 Demo users:
 
@@ -173,8 +240,8 @@ This runs all JUnit 5 tests, generates the JaCoCo report, and fails the build if
 
 Current verified result:
 
-- Tests: 50 passed
-- JaCoCo instruction coverage: 93.33%
+- Tests: 55 passed
+- JaCoCo instruction coverage: 93.69%
 - HTML report: `target/site/jacoco/index.html`
 - XML report for SonarQube: `target/site/jacoco/jacoco.xml`
 
@@ -335,6 +402,7 @@ ReplicationFactor: 3
 
 - [src/main/java/com/studentmanagement/controller/StudentController.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/controller/StudentController.java:1)
 - [src/main/java/com/studentmanagement/controller/AuthController.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/controller/AuthController.java:1)
+- [src/main/java/com/studentmanagement/controller/EmployeeController.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/controller/EmployeeController.java:1)
 - [src/main/java/com/studentmanagement/controller/DownstreamAggregationController.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/controller/DownstreamAggregationController.java:1)
 - [src/main/java/com/studentmanagement/controller/KafkaValidationController.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/controller/KafkaValidationController.java:1)
 - [src/main/java/com/studentmanagement/config/SecurityConfig.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/config/SecurityConfig.java:1)
@@ -347,6 +415,8 @@ ReplicationFactor: 3
 - [src/main/java/com/studentmanagement/service/DownstreamAggregationService.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/service/DownstreamAggregationService.java:1)
 - [src/main/java/com/studentmanagement/aspect/ServiceLoggingAspect.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/aspect/ServiceLoggingAspect.java:1)
 - [src/main/java/com/studentmanagement/exception/GlobalExceptionHandler.java](/Users/lopsun/Documents/New project 4/src/main/java/com/studentmanagement/exception/GlobalExceptionHandler.java:1)
+- [employee-angular-ui/src/app/app.ts](/Users/lopsun/Documents/New project 4/employee-angular-ui/src/app/app.ts:1)
+- [employee-angular-ui/src/app/employee-api.service.ts](/Users/lopsun/Documents/New project 4/employee-angular-ui/src/app/employee-api.service.ts:1)
 
 ## Deploy with Docker on EC2
 

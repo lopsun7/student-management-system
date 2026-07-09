@@ -58,7 +58,7 @@ export class App implements OnInit {
     this.employeeApi.logout();
     this.employees.set([]);
     this.resetForm();
-    this.message.set('Logged out.');
+    this.message.set('');
   }
 
   async loadEmployees(): Promise<void> {

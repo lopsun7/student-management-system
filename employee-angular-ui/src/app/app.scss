@@ -9,13 +9,17 @@
   font-family: Georgia, 'Times New Roman', serif;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 .shell {
   display: grid;
-  grid-template-columns: minmax(18rem, 0.85fr) minmax(24rem, 1.35fr);
-  gap: 2rem;
-  max-width: 1180px;
+  grid-template-columns: minmax(17rem, 23rem) minmax(0, 1fr);
+  gap: 1.4rem;
+  width: min(1120px, calc(100vw - 2rem));
   margin: 0 auto;
-  padding: 4rem 1.5rem;
+  padding: clamp(1rem, 3vw, 2.8rem) 0;
 }
 
 .hero,
@@ -31,7 +35,10 @@
 
 .hero {
   align-self: start;
-  padding: 2.4rem;
+  position: sticky;
+  top: 1rem;
+  padding: clamp(1.4rem, 3vw, 2rem);
+  overflow: hidden;
 }
 
 .eyebrow {
@@ -48,33 +55,34 @@ h1,
 h2,
 h3 {
   margin: 0;
-  line-height: 0.95;
+  line-height: 1;
 }
 
 h1 {
-  max-width: 9ch;
-  font-size: clamp(3rem, 9vw, 6.8rem);
-  letter-spacing: -0.08em;
+  max-width: 8.5ch;
+  font-size: clamp(2.7rem, 5.6vw, 4.4rem);
+  letter-spacing: -0.065em;
+  overflow-wrap: break-word;
 }
 
 h2 {
-  font-size: clamp(2rem, 5vw, 3.6rem);
+  font-size: clamp(1.8rem, 4vw, 3rem);
   letter-spacing: -0.06em;
 }
 
 .summary {
-  max-width: 34rem;
-  margin: 1.3rem 0 0;
+  max-width: 25rem;
+  margin: 1rem 0 0;
   color: #42564f;
-  font-size: 1.08rem;
-  line-height: 1.65;
+  font-size: 1rem;
+  line-height: 1.55;
 }
 
 .proof-strip {
   display: flex;
   flex-wrap: wrap;
   gap: 0.7rem;
-  margin-top: 2rem;
+  margin-top: 1.5rem;
 }
 
 .proof-strip span,
@@ -88,7 +96,14 @@ h2 {
 
 .login-card,
 .workspace {
-  padding: 1.4rem;
+  min-width: 0;
+  padding: clamp(1.1rem, 3vw, 1.6rem);
+}
+
+.login-card {
+  align-self: start;
+  max-width: 42rem;
+  width: 100%;
 }
 
 .tabs,
@@ -102,13 +117,14 @@ h2 {
 }
 
 .tabs {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   padding: 0.35rem;
   border-radius: 999px;
   background: rgba(22, 49, 43, 0.08);
 }
 
 .tabs button {
-  flex: 1;
   border: 0;
   border-radius: 999px;
   background: transparent;
@@ -169,6 +185,7 @@ button:disabled {
 
 .primary,
 .gmail {
+  width: 100%;
   background: #d96d1c;
   color: #fffaf0;
   box-shadow: 0 12px 24px rgba(217, 109, 28, 0.24);
@@ -228,7 +245,7 @@ button:disabled {
 
 .table-card {
   margin-top: 1.2rem;
-  overflow: hidden;
+  overflow-x: auto;
 }
 
 .table-heading {
@@ -268,7 +285,17 @@ th {
 @media (max-width: 860px) {
   .shell {
     grid-template-columns: 1fr;
-    padding-top: 2rem;
+    width: min(100% - 1rem, 46rem);
+    padding-top: 1rem;
+  }
+
+  .hero {
+    position: static;
+  }
+
+  h1 {
+    max-width: 100%;
+    font-size: clamp(2.5rem, 13vw, 4rem);
   }
 
   .employee-form {
